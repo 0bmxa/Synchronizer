@@ -15,9 +15,15 @@ import Foundation.NSDate
 /// - Note: Cannot be cancelled. For a cancellable version see
 /// `CancellableSynchronizer`.
 public class Synchronizer<T> {
+    /// The counting semaphore doing all the magic.
     private let semaphore = DispatchSemaphore(value: 0)
-    
+    /// The internal storage for the value to be transported.
     private var _value: T!
+
+    /// Creates a new non-cancellable Synchronizer object.
+    public init() {}
+
+    /// The value to be transported.
     public var value: T {
         set {
             self._value = newValue
@@ -35,14 +41,26 @@ public class Synchronizer<T> {
 ///
 /// - Note: For a simpler, non-cancellable version see `Synchronizer`.
 public class CancellableSynchronizer<T> {
+    /// The counting semaphore doing all the magic.
     private let semaphore = DispatchSemaphore(value: 0)
+    /// The internal storage for the value to be transported.
+    private var _value: T?
+    /// The timeout in seconds, if any.
     private let timeout: TimeInterval?
     
-    init(timeout: TimeInterval? = nil) {
+    /// Creates a new CancellableSynchronizer object.
+    /// - Parameter timeout: An optional timeout value (in seconds) of how long
+    ///   to wait before cancelling the blocking
+    public init(timeout: TimeInterval? = nil) {
         self.timeout = timeout
     }
     
-    private var _value: T?
+    /// The value to be transported.
+    /// - Important:
+    ///   - Read access to this is blocking (sends the thread to sleep). It
+    ///     starts the timeout countdown, if set.
+    ///   - Write access triggers continuation of the previously paused
+    ///     execution (wakes the thread up).
     public var value: T? {
         set {
             self._value = newValue
@@ -59,6 +77,8 @@ public class CancellableSynchronizer<T> {
         }
     }
     
+    /// Cancels the blocking, i.e. triggers continuation of the previously
+    /// paused execution.
     public func cancel() {
         self.semaphore.signal()
     }
