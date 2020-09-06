@@ -14,17 +14,17 @@ import Foundation.NSDate
 ///
 /// - Note: Cannot be cancelled. For a cancellable version see
 /// `CancellableSynchronizer`.
-public class Synchronizer<T> {
+public class Synchronizer<Response> {
     /// The counting semaphore doing all the magic.
     private let semaphore = DispatchSemaphore(value: 0)
     /// The internal storage for the value to be transported.
-    private var _value: T!
+    private var _value: Response!
 
     /// Creates a new non-cancellable Synchronizer object.
     public init() {}
 
     /// The value to be transported.
-    public var value: T {
+    public var value: Response {
         set {
             self._value = newValue
             self.semaphore.signal()
@@ -40,11 +40,11 @@ public class Synchronizer<T> {
 /// (e.g. function call) synchronous (blocking).
 ///
 /// - Note: For a simpler, non-cancellable version see `Synchronizer`.
-public class CancellableSynchronizer<T> {
+public class CancellableSynchronizer<Response> {
     /// The counting semaphore doing all the magic.
     private let semaphore = DispatchSemaphore(value: 0)
     /// The internal storage for the value to be transported.
-    private var _value: T?
+    private var _value: Response?
     /// The timeout in seconds, if any.
     private let timeout: TimeInterval?
     
@@ -61,7 +61,7 @@ public class CancellableSynchronizer<T> {
     ///     starts the timeout countdown, if set.
     ///   - Write access triggers continuation of the previously paused
     ///     execution (wakes the thread up).
-    public var value: T? {
+    public var value: Response? {
         set {
             self._value = newValue
             self.semaphore.signal()
