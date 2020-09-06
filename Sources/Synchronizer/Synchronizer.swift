@@ -71,12 +71,8 @@ public class CancellableSynchronizer<Response> {
             self.semaphore.signal()
         }
         get {
-            if let timeout = self.timeout {
-                _ = self.semaphore.wait(timeout: DispatchTime.now() + timeout)
-                return self._value
-            }
-            
-            self.semaphore.wait()
+            let timeout: DispatchTime = self.timeout != nil ? .now() + self.timeout! : .distantFuture
+            _ = self.semaphore.wait(timeout: timeout)
             return self._value
         }
     }
